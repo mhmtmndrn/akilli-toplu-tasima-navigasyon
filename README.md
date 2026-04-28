@@ -5,7 +5,7 @@
 **Ders:** Veri Yapıları  
 **Proje Konusu:** Konu 5  
 **Proje Adı:** Akıllı Toplu Taşıma ve Navigasyon Sistemi  
-**Proje Ekibi:**  
+**Proje Ekibi:**  GRUP 11
 - MEHMET EMİN DURAN - 032390042
 - KEREM BEYAZ - 032390054
 - ŞÜKRÜ ÇOŞKUN - 032390063
