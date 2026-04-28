@@ -16,7 +16,7 @@
 
 ## 2. Projenin Amacı
 
-Bu projenin amacı, bir şehrin toplu taşıma ağını veri yapıları ve algoritmalar kullanarak modelleyen sadeleştirilmiş bir navigasyon sistemi geliştirmektir.
+Projedeki amaç, bir şehrin toplu taşıma ağını veri yapıları ve algoritmalar kullanarak modelleyen sadeleştirilmiş bir navigasyon sistemi geliştirmektir.
 
 Sistemde duraklar graf yapısındaki düğümler olarak, duraklar arasındaki ulaşım bağlantıları ise mesafe, süre ve hat bilgisi taşıyan kenarlar olarak temsil edilmektedir. Kullanıcının bulunduğu konuma en yakın durakların bulunması ve başlangıç-hedef noktaları arasında en uygun rotanın hesaplanması hedeflenmektedir.
 
