@@ -33,10 +33,10 @@ Kullanilan branch yapisi:
 
 - `main`: Ana branch. Dogrudan kod yazilmamasi hedeflenmektedir.
 - `feature-emin`: Veri yapilari ve temel modelleme calismalari.
-- `feature-ali`: Ekip uyesi gelistirme branch'i.
-- `feature-sukru`: Ekip uyesi gelistirme branch'i.
-- `feature-taha`: Ekip uyesi gelistirme branch'i.
-- `feature-kerem`: Ekip uyesi gelistirme branch'i.
+- `feature-ali`:  Graf ve rota algoritmalari.
+- `feature-sukru`: Bursa veri seti ve hat modelleme çalışmaları.
+- `feature-taha`: Harita arayuzu ve etkilesim çalışmaları.
+- `feature-kerem`: Simulasyon ve API entegrasyonu.
 
 Bu asamada her ekip uyesinin kendi branch'i uzerinden calisma yapmasi, daha sonra ana branch'e pull request acarak ekleme-degistirme isteginde bulunmasi planlanmistir. Boylece ana branch dogrudan degistirilmeden, GitHub uzerinde takip edilebilir bir gelistirme sureci olusturulmustur.
 
@@ -194,6 +194,3 @@ README veya ana branch karsilama sayfasinda belirtilmesi onerilen guncel durum:
 - Console arayuz daha sonra web veya harita tabanli gorsel arayuze donusturulecektir.
 - Nihai rapor icin Big-O analizleri, UML diyagramlari ve demo senaryolari tamamlanacaktir.
 
-## 10. Teslim Notu
-
-Bu ara rapor, 30.04.2026 tarihli ara kontrol icin GitHub reposunda ulasilan seviyeyi ozetlemektedir. Bu asamada proje, final teslim seviyesinde degil; fakat ekip uyelerinin aktif calisma yapabilecegi branch yapisi, modullere ayrilmis kod iskeletleri, ornek veri seti ve dokumantasyon dosyalariyla ara rapor kosullarini karsilayacak duzeye getirilmesi hedeflenmistir.
