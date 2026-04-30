@@ -1,101 +1,122 @@
-# Akıllı Toplu Taşıma ve Navigasyon Sistemi
+# Proje Konu 5 - Akıllı Toplu Taşıma ve Navigasyon Sistemi
 
-## 1. Proje Bilgileri
+## Proje Bilgileri
 
-**Ders:** Veri Yapıları  
-**Proje Konusu:** Konu 5  
 **Proje Adı:** Akıllı Toplu Taşıma ve Navigasyon Sistemi  
-**Proje Ekibi:**  GRUP 11
-- MEHMET EMİN DURAN - 032390042
-- KEREM BEYAZ - 032390054
-- ŞÜKRÜ ÇOŞKUN - 032390063
-- TAHA AKMAN - 032390073
-- ALİ İHSAN DAĞAŞAN - 032390077
+**Ders:** Veri Yapıları  
+**Proje Konusu:** Proje Konu 5  
+**GitHub Repository:** https://github.com/mhmtmndrn/akilli-toplu-tasima-navigasyon
+
+Bu proje, bir şehrin toplu taşıma ağını veri yapıları ve graf algoritmaları kullanarak modellemeyi amaçlamaktadır. Projede duraklar düğüm, duraklar arasındaki ulaşım bağlantıları ise mesafe, süre ve hat bilgisi taşıyan kenarlar olarak ele alınmaktadır.
+
+Temel amaç; kullanıcının bulunduğu konuma en yakın durakları bulmak, duraklar arası ulaşım ağını graf yapısı ile temsil etmek ve başlangıç-hedef noktaları arasında uygun rotayı hesaplamaktır.
 
 ---
 
-## 2. Projenin Amacı
+## Grup Üyeleri ve Görev Dağılımı
 
-Projedeki amaç, bir şehrin toplu taşıma ağını veri yapıları ve algoritmalar kullanarak modelleyen sadeleştirilmiş bir navigasyon sistemi geliştirmektir.
-
-Sistemde duraklar graf yapısındaki düğümler olarak, duraklar arasındaki ulaşım bağlantıları ise mesafe, süre ve hat bilgisi taşıyan kenarlar olarak temsil edilmektedir. Kullanıcının bulunduğu konuma en yakın durakların bulunması ve başlangıç-hedef noktaları arasında en uygun rotanın hesaplanması hedeflenmektedir.
-
-Proje kapsamında temel olarak şu işlemler gerçekleştirilecektir:
-
-- Toplu taşıma duraklarının koordinat bilgileriyle saklanması
-- Kullanıcının konumuna en yakın durakların bulunması
-- Duraklar arası ulaşım ağının graf yapısıyla modellenmesi
-- Başlangıç ve hedef durak arasında en uygun rotanın hesaplanması
-- Rota sonucunun sade bir arayüz veya görselleştirme ile gösterilmesi
-- Kullanılan veri yapılarının zaman ve uzay karmaşıklıklarının analiz edilmesi
+| Ad Soyad | Öğrenci No | Görev Alanı | Branch |
+|---|---:|---|---|
+| Mehmet Emin Duran | 032390042 | Veri yapıları ve temel modeller | `feature-emin` |
+| Kerem Beyaz | 032390054 | Simülasyon ve API entegrasyonu | `feature-kerem` |
+| Şükrü Çoşkun | 032390063 | Bursa veri seti ve hat modelleme | `feature-sukru` |
+| Taha Akman | 032390073 | Harita arayüzü ve etkileşim | `feature-taha` |
+| Ali İhsan Dağaşan | 032390077 | Graf ve rota algoritmaları | `feature-ali` |
 
 ---
 
-## 3. Problem Tanımı
+## Ara Rapor Durumu
 
-Günlük hayatta toplu taşıma kullanan kişiler, bulundukları konuma en yakın durağı ve hedeflerine ulaşmak için en uygun rotayı hızlı bir şekilde öğrenmek ister. Bu problem, veri yapıları açısından iki ana alt probleme ayrılabilir:
+Ara rapor aşamasında ekip üyeleri için ayrı branch’ler oluşturulmuş ve her üye kendi görev alanına uygun şekilde geliştirme sürecine dahil edilmiştir.
 
-1. **En yakın durak bulma problemi:**  
-   Kullanıcının konumu verildiğinde, bu konuma en yakın K adet durağın bulunması gerekir.
+Bu kapsamda yapılan işlemler:
 
-2. **En uygun rota bulma problemi:**  
-   Başlangıç durağı ile hedef durağı arasında mesafe, süre veya aktarma sayısı gibi maliyetlere göre en uygun yolun hesaplanması gerekir.
-
-Bu projede bu iki problem, spatial tree yapıları, graf yapısı, öncelik kuyruğu ve hash table gibi veri yapıları kullanılarak çözülmeye çalışılacaktır.
+- GitHub repository oluşturuldu.
+- Ekip üyeleri repository’ye collaborator olarak eklendi.
+- Her ekip üyesi için ayrı feature branch oluşturuldu.
+- Her ekip üyesi kendi branch’i üzerinden çalışma yaptı.
+- Her branch’ten main/master branch’e Pull Request açıldı.
+- Pull Request süreci kullanılarak ekip içi versiyon kontrol akışı başlatıldı.
+- Proje görev dağılımı belirlendi.
+- Projenin temel dosya ve klasör yapısı oluşturulmaya başlandı.
+- README.md dosyası ara rapor niteliğinde güncellendi.
 
 ---
 
-## 4. Kullanılacak Veri Yapıları
+## Pull Request Bilgileri
 
-### 4.1 KD-Tree / Quad-Tree
+| Branch | Pull Request | Açıklama |
+|---|---|---|
+| `feature-ali` | #2 | Graf ve rota algoritmaları için başlangıç çalışmaları |
+| `feature-emin` | #3 | Veri yapıları ve temel modeller için başlangıç çalışmaları |
+| `feature-taha` | #4 | Harita arayüzü ve kullanıcı etkileşimi için başlangıç çalışmaları |
+| `feature-sukru` | #5 | Bursa veri seti ve hat modelleme için başlangıç çalışmaları |
+| `feature-kerem` | #7 | Simülasyon ve API entegrasyonu için başlangıç çalışmaları |
 
-Durakların 2 boyutlu koordinatlarını tutmak için kullanılacaktır. Kullanıcının konumu sisteme girildiğinde, bu konuma en yakın K durağı bulmak amacıyla spatial tree yapısından yararlanılacaktır.
+---
 
-Bu yapı sayesinde tüm durakları tek tek dolaşmak yerine, daha verimli bir arama yapılması hedeflenmektedir.
+## Projenin Amacı
 
-**Kullanım amacı:**
+Bu proje ile şehir içi toplu taşıma sisteminin sadeleştirilmiş bir modeli oluşturulacaktır. Kullanıcıdan alınan başlangıç ve hedef konum bilgilerine göre en yakın duraklar belirlenecek, bu duraklar üzerinden en uygun rota hesaplanacaktır.
+
+Projenin temel hedefleri:
+
+- Durakları koordinat bilgileriyle birlikte sistemde tutmak
+- Kullanıcı konumuna en yakın durakları bulmak
+- Toplu taşıma hatlarını graf yapısı ile modellemek
+- Duraklar arası en kısa veya en uygun rotayı hesaplamak
+- Rota sonucunu kullanıcıya anlaşılır şekilde göstermek
+- Aktarma, mesafe ve süre gibi maliyetleri rota hesabına dahil etmek
+
+---
+
+## Kullanılacak Temel Veri Yapıları
+
+### 1. Kd-Tree / Quad-Tree
+
+Durakların iki boyutlu koordinat bilgilerini tutmak ve kullanıcının bulunduğu konuma en yakın durakları daha verimli bulmak için kullanılacaktır.
+
+Bu yapı sayesinde tüm durakları tek tek gezmek yerine, konuma yakın duraklar daha hızlı sorgulanabilecektir.
+
+Kullanım amacı:
 
 - Durak koordinatlarını saklamak
-- Kullanıcının konumuna en yakın durakları bulmak
-- KNN algoritmasının daha verimli çalışmasını sağlamak
+- En yakın K durağı bulmak
+- Konum bazlı arama performansını artırmak
 
 ---
 
-### 4.2 Graph / Multigraph
+### 2. Graph / Multigraph
 
-Toplu taşıma ağı graf yapısı ile temsil edilecektir.
+Toplu taşıma ağı graf olarak modellenecektir.
 
 - Düğümler: Duraklar
-- Kenarlar: Duraklar arası ulaşım bağlantıları
-- Kenar özellikleri:
-  - Mesafe
-  - Süre
-  - Hat bilgisi
-  - Aktarma bilgisi
+- Kenarlar: Duraklar arası bağlantılar
+- Kenar bilgileri: Mesafe, süre, hat bilgisi
 
-Aynı iki durak arasında birden fazla toplu taşıma hattı bulunabileceği için sistemde multigraph mantığı da desteklenebilir.
+Aynı iki durak arasında birden fazla ulaşım hattı bulunabileceği için multigraph yapısı desteklenebilir.
 
-**Kullanım amacı:**
+Kullanım amacı:
 
-- Duraklar arası bağlantıları saklamak
-- Rota hesaplama algoritmalarını çalıştırmak
-- Hatlar arası geçişleri temsil etmek
+- Duraklar arası ulaşım ilişkilerini tutmak
+- Rota hesaplamak
+- Hat ve aktarma bilgilerini modellemek
 
 ---
 
-### 4.3 Min-Heap / Priority Queue
+### 3. Min-Heap / Priority Queue
 
-Dijkstra algoritmasında en düşük maliyetli düğümü seçmek için kullanılacaktır. Böylece rota hesaplama işlemi daha verimli hale getirilecektir.
+Dijkstra algoritmasında en düşük maliyetli düğümü seçmek için kullanılacaktır.
 
-**Kullanım amacı:**
+Kullanım amacı:
 
-- Dijkstra algoritmasında sıradaki en düşük maliyetli durağı seçmek
-- Rota maliyetlerini karşılaştırmak
-- Öncelikli düğüm işlemlerini hızlı gerçekleştirmek
+- En kısa yol algoritmasını verimli çalıştırmak
+- Dijkstra algoritmasında öncelikli düğüm seçimi yapmak
+- Rota maliyetini optimize etmek
 
 ---
 
-### 4.4 Hash Table
+### 4. Hash Table
 
 Durak ve hat bilgilerine hızlı erişim sağlamak için kullanılacaktır.
 
@@ -103,69 +124,81 @@ Durak ve hat bilgilerine hızlı erişim sağlamak için kullanılacaktır.
 
 - Durak ID → Durak bilgisi
 - Hat ID → Hat üzerindeki duraklar
-- Durak adı → Durak ID
 
-**Kullanım amacı:**
+Kullanım amacı:
 
-- Durak bilgilerine hızlı erişmek
+- Duraklara hızlı erişmek
 - Hat bilgilerini hızlı sorgulamak
-- Rota hesaplama sırasında düğüm bilgilerini verimli şekilde almak
+- Ortalama O(1) erişim sağlamak
 
 ---
 
-## 5. Kullanılacak Algoritmalar
+## Kullanılacak Algoritmalar
 
-### 5.1 K-Nearest Neighbors
+### 1. K-Nearest Neighbors
 
-Kullanıcının konumuna en yakın K adet durağı bulmak için kullanılacaktır. Kullanıcıdan alınan konum bilgisi KD-Tree veya Quad-Tree üzerinde sorgulanarak en yakın duraklar listelenecektir.
+Kullanıcının bulunduğu konuma en yakın K durağı bulmak için kullanılacaktır.
 
-**Örnek:**
-
-Kullanıcı konumu: `(x, y)`  
-Sorgu sonucu: En yakın 3 durak
+Bu algoritma spatial tree yapısı üzerinde çalıştırılarak doğrusal aramaya göre daha verimli sonuç alınması hedeflenmektedir.
 
 ---
 
-### 5.2 Dijkstra Algoritması
+### 2. Dijkstra Algoritması
 
-Başlangıç durağı ile hedef durağı arasında en düşük maliyetli rotayı bulmak için kullanılacaktır.
+Başlangıç ve hedef duraklar arasında en düşük maliyetli rotayı bulmak için kullanılacaktır.
 
-Rota maliyeti şu bileşenlere göre hesaplanabilir:
+Rota maliyeti aşağıdaki kriterlere göre hesaplanabilir:
 
-- Kullanıcıdan başlangıç durağına yürüme mesafesi
-- Duraklar arası ulaşım süresi veya mesafesi
-- Aktarma yapılması durumunda ek aktarma maliyeti
-
-Bu sayede sistem yalnızca en kısa yolu değil, aynı zamanda en hızlı veya en az aktarmalı rotayı da değerlendirebilecek şekilde genişletilebilir.
-
----
-
-### 5.3 A* Algoritması
-
-A* algoritması opsiyonel olarak değerlendirilecektir. Eğer proje ilerleyen aşamalarda daha gelişmiş hale getirilirse, Dijkstra algoritmasına ek olarak A* algoritması kullanılabilir.
-
-A* algoritması, hedefe olan tahmini uzaklığı da hesaba kattığı için bazı durumlarda Dijkstra algoritmasına göre daha hızlı sonuç verebilir.
+- Kullanıcının durağa yürüme mesafesi
+- Duraklar arası ulaşım mesafesi
+- Duraklar arası tahmini süre
+- Aktarma sayısı
+- Aktarma yapılması durumunda ek maliyet
 
 ---
 
-## 6. Sistem Mimarisi
+### 3. A* Algoritması
 
-Proje aşağıdaki temel bileşenlerden oluşacaktır:
+A* algoritması opsiyonel olarak değerlendirilecektir. Heuristic kullanılarak Dijkstra algoritmasına göre daha hızlı rota hesaplama yapılması hedeflenebilir.
+
+---
+
+## Proje Mimarisi
+
+Proje C# dili kullanılarak geliştirilecektir. Temel mimari aşağıdaki modüllerden oluşacaktır:
 
 ```text
-Kullanıcı Konumu
-       |
-       v
-KD-Tree / Quad-Tree
-       |
-       v
-En Yakın Durakların Bulunması
-       |
-       v
-Graph / Multigraph
-       |
-       v
-Dijkstra Algoritması
-       |
-       v
-Rota Sonucu ve Görselleştirme
+akilli-toplu-tasima-navigasyon/
+│
+├── src/
+│   ├── Models/
+│   │   ├── Stop.cs
+│   │   ├── Route.cs
+│   │   ├── Line.cs
+│   │   └── Edge.cs
+│   │
+│   ├── DataStructures/
+│   │   ├── Graph.cs
+│   │   ├── MinHeap.cs
+│   │   ├── HashTable.cs
+│   │   └── SpatialTree.cs
+│   │
+│   ├── Algorithms/
+│   │   ├── Dijkstra.cs
+│   │   ├── KNearestNeighbors.cs
+│   │   └── AStar.cs
+│   │
+│   ├── Services/
+│   │   ├── RouteService.cs
+│   │   ├── StopService.cs
+│   │   └── SimulationService.cs
+│   │
+│   └── Program.cs
+│
+├── docs/
+│   ├── ara-rapor.md
+│   ├── proje-raporu.md
+│   └── uml-diyagramlari/
+│
+├── README.md
+└── .gitignore
