@@ -1,47 +1,34 @@
-# Arayuz Baslangic Plani
+# Harita Arayuzu
 
-Bu dokuman, Harita Arayuzu ve Etkilesim gorev branch'i icin hazirlanan baslangic arayuz iskeletini aciklar.
+Projenin gorsel arayuzu `docs/demo-map.html` dosyasinda hazirlanan Leaflet tabanli harita demosudur. Arayuz Bursa haritasi uzerinde metro ve otobus hatlarini gosterir.
 
-Proje bu asamada console tabanli olarak dusunulmustur. Final asamasinda ayni akis web, masaustu veya harita tabanli bir gorsel arayuze tasinabilir.
+## Temel Akis
 
-## ConsoleMenu
+1. Kullanici `Baslangic Sec` modunu acar ve haritaya tiklar.
+2. Kullanici `Hedef Sec` modunu acar ve haritaya tiklar.
+3. Sistem baslangic konumuna en yakin K duragi KdTree uzerinden bulur.
+4. Sistem hedef konumuna en yakin duragi bulur.
+5. Dijkstra algoritmasi MinHeap kullanarak toplu tasima grafi uzerinde rotayi hesaplar.
+6. Arayuz yurume baglantilarini, toplu tasima rotasini, aktarma duraklarini ve maliyetleri gosterir.
 
-`ConsoleMenu`, kullanicinin temel islemleri secmesini temsil eden baslangic sinifidir.
+## Harita Uzerinde Gosterilenler
 
-Mevcut placeholder islemler:
+- Bursa harita katmani
+- BursaRay M1 ve M2 hatlari
+- Belli basli otobus koridorlari
+- Tum durak markerlari
+- Secilen baslangic ve hedef konumlari
+- En yakin K durak
+- Dijkstra ile hesaplanan rota
+- Aktarma duraklari
 
-- Ana menu seceneklerini gosterme.
-- Baslangic noktasini temsil eden koordinat secimi.
-- Hedef noktasini temsil eden koordinat secimi.
-- En yakin duraklari gosterme.
-- Rota sonucunu gosterme.
+## Rota Maliyet Bilgileri
 
-Bu sinif, ileride kullanici giris dogrulama, menu dongusu ve servis katmani baglantilari ile genisletilebilir.
+Sol panelde rota maliyeti parcalara ayrilarak gosterilir:
 
-## MapRenderer
+- Yurume maliyeti
+- Ulasim maliyeti
+- Aktarma cezasi
+- Toplam maliyet
 
-`MapRenderer`, harita veya rota gosterimi icin ayrilan baslangic sinifidir.
-
-Mevcut placeholder islemler:
-
-- Bos harita alanini console uzerinde temsil etme.
-- Secilen baslangic ve hedef noktalarini yazdirma.
-- En yakin durak listesini yazdirma.
-- Rota sonucunu durak sirasi olarak yazdirma.
-
-Final projede bu sinif yerine gercek bir harita bileseni, grid tabanli gosterim veya web arayuzu kullanilabilir.
-
-## Planlanan Etkilesim Akisi
-
-1. Kullanici baslangic koordinatini secer.
-2. Kullanici hedef koordinatini secer.
-3. Sistem KNN veya KdTree kullanarak en yakin duraklari bulur.
-4. Sistem graf ve Dijkstra algoritmasi ile rota hesaplar.
-5. Arayuz en yakin duraklari ve rota sonucunu gosterir.
-
-## Sonraki Adimlar
-
-- ConsoleMenu icin gercek menu dongusu eklenebilir.
-- Kullanici girdileri icin hata kontrolu guclendirilebilir.
-- MapRenderer, frontend veya harita kutuphanesi ile degistirilebilir.
-- Rota sonucu icin aktarma, sure ve mesafe bilgileri gosterilebilir.
+Bu yapi, proje tanimindaki harita tabanli konum secimi, en yakin durak bulma, rota cizimi ve aktarma gosterimi maddelerini karsilar.

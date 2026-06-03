@@ -1,0 +1,1281 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BursaRay Harita Demo</title>
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIINfQPDKyeJWP9t9NfJec4bH5Fl4KewMEs="
+    crossorigin="">
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #172033;
+      --muted: #65748b;
+      --line: #d7dee8;
+      --panel: #ffffff;
+      --paper: #f5f7fa;
+      --m1: #1967d2;
+      --m2: #c27803;
+      --bus-a: #0e8a65;
+      --bus-b: #7c3aed;
+      --bus-c: #be123c;
+      --route: #d93636;
+      --nearest: #111827;
+      --transfer: #8a5a00;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--ink);
+      background: var(--paper);
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 360px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    aside {
+      background: var(--panel);
+      border-right: 1px solid var(--line);
+      padding: 20px;
+      overflow: auto;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 23px;
+      line-height: 1.15;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      margin: 22px 0 10px;
+      color: var(--muted);
+      font-size: 13px;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+
+    p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    label {
+      display: grid;
+      gap: 7px;
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .mode-controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    button {
+      height: 38px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      color: var(--ink);
+      background: #fff;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    button.active {
+      border-color: var(--route);
+      color: #fff;
+      background: var(--route);
+    }
+
+    select,
+    input {
+      width: 100%;
+      height: 38px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 0 10px;
+      color: var(--ink);
+      background: #fff;
+      font: inherit;
+    }
+
+    .metric {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--line);
+      font-size: 14px;
+    }
+
+    .metric strong {
+      text-align: right;
+    }
+
+    .list {
+      display: grid;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .pill {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 8px;
+      min-height: 34px;
+      padding: 7px 9px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fbfcfe;
+      font-size: 14px;
+    }
+
+    .summary-list {
+      display: grid;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .summary-step {
+      display: grid;
+      grid-template-columns: 28px 1fr auto;
+      gap: 10px;
+      align-items: center;
+      padding: 9px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fbfcfe;
+      font-size: 14px;
+    }
+
+    .summary-index {
+      display: grid;
+      place-items: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 999px;
+      color: #fff;
+      background: var(--ink);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .summary-step strong {
+      font-size: 15px;
+      white-space: nowrap;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: var(--nearest);
+    }
+
+    .badge {
+      color: var(--muted);
+      font-size: 12px;
+      text-align: right;
+    }
+
+    .legend {
+      display: grid;
+      gap: 9px;
+      margin-top: 10px;
+      font-size: 13px;
+    }
+
+    .legend-item {
+      display: grid;
+      grid-template-columns: 24px 1fr;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .swatch {
+      width: 24px;
+      height: 5px;
+      border-radius: 99px;
+      background: var(--route);
+    }
+
+    .swatch.m1 { background: var(--m1); }
+    .swatch.m2 { background: var(--m2); }
+    .swatch.bus-a { background: var(--bus-a); }
+    .swatch.bus-b { background: var(--bus-b); }
+    .swatch.bus-c { background: var(--bus-c); }
+
+    .map-stage {
+      min-width: 0;
+      padding: 16px;
+    }
+
+    #map {
+      width: 100%;
+      height: calc(100vh - 32px);
+      min-height: 640px;
+      border: 1px solid var(--line);
+      background: #dbe5ee;
+    }
+
+    .leaflet-container {
+      overflow: hidden;
+      background: #dbe5ee;
+      outline-offset: 1px;
+      font: 12px/1.5 Arial, Helvetica, sans-serif;
+    }
+
+    .leaflet-pane,
+    .leaflet-tile,
+    .leaflet-marker-icon,
+    .leaflet-marker-shadow,
+    .leaflet-tile-container,
+    .leaflet-pane > svg,
+    .leaflet-pane > canvas,
+    .leaflet-zoom-box,
+    .leaflet-image-layer,
+    .leaflet-layer {
+      position: absolute;
+      left: 0;
+      top: 0;
+    }
+
+    .leaflet-map-pane {
+      z-index: 400;
+    }
+
+    .leaflet-tile-pane {
+      z-index: 200;
+    }
+
+    .leaflet-overlay-pane {
+      z-index: 400;
+    }
+
+    .leaflet-shadow-pane {
+      z-index: 500;
+    }
+
+    .leaflet-marker-pane {
+      z-index: 600;
+    }
+
+    .leaflet-tooltip-pane {
+      z-index: 650;
+    }
+
+    .leaflet-popup-pane {
+      z-index: 700;
+    }
+
+    .leaflet-container {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .leaflet-tile,
+    .leaflet-marker-icon,
+    .leaflet-marker-shadow {
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
+    .leaflet-tile {
+      width: 256px;
+      height: 256px;
+      filter: inherit;
+      visibility: hidden;
+      border: 0;
+    }
+
+    .leaflet-tile-loaded {
+      visibility: inherit;
+    }
+
+    .leaflet-zoom-animated {
+      transform-origin: 0 0;
+    }
+
+    .leaflet-interactive {
+      cursor: pointer;
+    }
+
+    .leaflet-grab {
+      cursor: grab;
+    }
+
+    .leaflet-dragging .leaflet-grab {
+      cursor: move;
+      cursor: grabbing;
+    }
+
+    .leaflet-control {
+      position: relative;
+      z-index: 800;
+      pointer-events: auto;
+      float: left;
+      clear: both;
+    }
+
+    .leaflet-top,
+    .leaflet-bottom {
+      position: absolute;
+      z-index: 1000;
+      pointer-events: none;
+    }
+
+    .leaflet-top {
+      top: 0;
+    }
+
+    .leaflet-right {
+      right: 0;
+    }
+
+    .leaflet-bottom {
+      bottom: 0;
+    }
+
+    .leaflet-left {
+      left: 0;
+    }
+
+    .leaflet-control-zoom {
+      margin: 10px;
+      border: 2px solid rgb(0 0 0 / 20%);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .leaflet-control-zoom a {
+      display: block;
+      width: 30px;
+      height: 30px;
+      background: #fff;
+      color: #172033;
+      text-align: center;
+      text-decoration: none;
+      font: bold 20px/30px Arial, Helvetica, sans-serif;
+      border-bottom: 1px solid #ccd5df;
+    }
+
+    .leaflet-control-zoom a:last-child {
+      border-bottom: 0;
+    }
+
+    .leaflet-control-attribution,
+    .leaflet-control-scale-line {
+      margin: 0 8px 8px;
+      padding: 2px 6px;
+      background: rgb(255 255 255 / 85%);
+      color: #334155;
+      border: 1px solid #cbd5e1;
+      border-radius: 3px;
+      font-size: 11px;
+    }
+
+    .leaflet-popup {
+      position: absolute;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .leaflet-tooltip {
+      position: absolute;
+      padding: 4px 7px;
+      background: #fff;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      color: #172033;
+      white-space: nowrap;
+      box-shadow: 0 1px 4px rgb(0 0 0 / 20%);
+      pointer-events: none;
+    }
+
+    .station-icon,
+    .nearest-icon,
+    .route-icon,
+    .transfer-icon {
+      display: block;
+      width: 10px;
+      height: 10px;
+      border: 2px solid #475569;
+      border-radius: 999px;
+      background: #f8fafc;
+      box-shadow: 0 1px 3px rgb(0 0 0 / 18%);
+      opacity: .72;
+    }
+
+    .nearest-icon {
+      border-color: var(--nearest);
+      width: 21px;
+      height: 21px;
+      border-width: 3px;
+      background: #fff;
+      box-shadow: 0 1px 6px rgb(0 0 0 / 30%);
+      opacity: 1;
+    }
+
+    .route-icon {
+      border-color: var(--route);
+      background: #fff4f4;
+      width: 22px;
+      height: 22px;
+      border-width: 3px;
+      box-shadow: 0 1px 6px rgb(0 0 0 / 30%);
+      opacity: 1;
+    }
+
+    .transfer-icon {
+      border-color: var(--transfer);
+      background: #fff4cc;
+      width: 24px;
+      height: 24px;
+      border-width: 3px;
+      box-shadow: 0 1px 7px rgb(0 0 0 / 35%);
+      opacity: 1;
+    }
+
+    .point-icon {
+      display: block;
+      width: 18px;
+      height: 18px;
+      border: 3px solid #fff;
+      border-radius: 999px;
+      background: #172033;
+      box-shadow: 0 1px 5px rgb(0 0 0 / 35%);
+    }
+
+    .start-point-icon,
+    .target-point-icon {
+      display: block;
+      width: 22px;
+      height: 22px;
+      border: 3px solid #fff;
+      border-radius: 999px;
+      box-shadow: 0 1px 7px rgb(0 0 0 / 40%);
+    }
+
+    .start-point-icon {
+      background: #0f8b5f;
+    }
+
+    .target-point-icon {
+      background: #d93636;
+    }
+
+    @media (max-width: 880px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+
+      aside {
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .map-stage {
+        padding: 10px;
+      }
+
+      #map {
+        height: 68vh;
+        min-height: 460px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <aside>
+      <h1>BursaRay Harita Demo</h1>
+      <p>Gercek Bursa haritasi uzerinde en yakin istasyon ve Dijkstra rota gosterimi.</p>
+
+      <h2>Rota Secimi</h2>
+      <div class="mode-controls">
+        <button id="pickStartButton" type="button">Baslangic Sec</button>
+        <button id="pickTargetButton" type="button">Hedef Sec</button>
+      </div>
+      <label>
+        Baslangic noktasi
+        <select id="startSelect"></select>
+      </label>
+      <label>
+        Hedef noktasi
+        <select id="targetSelect"></select>
+      </label>
+      <label>
+        En yakin durak sayisi
+        <input id="nearestCount" type="number" min="1" max="5" value="3">
+      </label>
+
+      <h2>Rota Sonucu</h2>
+      <div class="metric"><span>Aktif secim</span><strong id="pickModeMetric">-</strong></div>
+      <div class="metric"><span>Baslangic istasyonu</span><strong id="startStopMetric">-</strong></div>
+      <div class="metric"><span>Hedef istasyonu</span><strong id="targetStopMetric">-</strong></div>
+      <div class="metric"><span>Ilk yuruyus</span><strong id="firstWalkMetric">-</strong></div>
+      <div class="metric"><span>Hat icinde</span><strong id="transitMetric">-</strong></div>
+      <div class="metric"><span>Son yuruyus</span><strong id="lastWalkMetric">-</strong></div>
+      <div class="metric"><span>Toplam sure</span><strong id="costMetric">-</strong></div>
+      <div class="metric"><span>Aktarma</span><strong id="transferMetric">-</strong></div>
+
+      <h2>Yol Ozeti</h2>
+      <div class="summary-list" id="tripSummaryList"></div>
+
+      <h2>En Yakin Istasyonlar</h2>
+      <div class="list" id="nearestList"></div>
+
+      <h2>Hesaplanan Rota</h2>
+      <div class="list" id="routeList"></div>
+
+      <h2>Hatlar</h2>
+      <div class="legend">
+        <div class="legend-item"><span class="swatch m1"></span><span>M1 Balat/Emek - Arabayatagi</span></div>
+        <div class="legend-item"><span class="swatch m2"></span><span>M2 Universite - Kestel</span></div>
+        <div class="legend-item"><span class="swatch bus-a"></span><span>Terminal / Kestel / Demirtas</span></div>
+        <div class="legend-item"><span class="swatch bus-b"></span><span>Mudanya / BUDO / Emek</span></div>
+        <div class="legend-item"><span class="swatch bus-c"></span><span>Gorukle / Sehir Hastanesi / Heykel</span></div>
+        <div class="legend-item"><span class="swatch"></span><span>Dijkstra rotasi</span></div>
+      </div>
+    </aside>
+
+    <section class="map-stage" aria-label="BursaRay haritasi">
+      <div id="map"></div>
+    </section>
+  </main>
+
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""></script>
+  <script>
+    const points = [
+      { id: "P1", name: "Balat Cevresi", lat: 40.2550, lon: 28.9400 },
+      { id: "P2", name: "Emek Cevresi", lat: 40.2450, lon: 28.9300 },
+      { id: "P3", name: "Acemler Cevresi", lat: 40.2080, lon: 29.0360 },
+      { id: "P4", name: "Sehrekustu Merkez", lat: 40.1880, lon: 29.0630 },
+      { id: "P5", name: "Universite Kampusu", lat: 40.2250, lon: 28.8700 },
+      { id: "P6", name: "Kestel Cevresi", lat: 40.1980, lon: 29.2100 },
+      { id: "P7", name: "Terminal Cevresi", lat: 40.2660, lon: 29.0560 },
+      { id: "P8", name: "Mudanya Cevresi", lat: 40.3770, lon: 28.8830 },
+      { id: "P9", name: "Sehir Hastanesi Cevresi", lat: 40.2320, lon: 28.9350 },
+      { id: "P10", name: "Gorukle Cevresi", lat: 40.2320, lon: 28.8450 },
+      { id: "P11", name: "Teleferik Cevresi", lat: 40.1740, lon: 29.0830 }
+    ];
+
+    const stops = [
+      { id: "B01", name: "Balat", lat: 40.2550, lon: 28.9400 },
+      { id: "B02", name: "Emek", lat: 40.2450, lon: 28.9300 },
+      { id: "B03", name: "Korupark", lat: 40.2380, lon: 28.9450 },
+      { id: "B04", name: "Organize Sanayi", lat: 40.2320, lon: 28.9650 },
+      { id: "B05", name: "Hamitler/Fethiye", lat: 40.2260, lon: 28.9850 },
+      { id: "B06", name: "Baglarbasi/Esentepe", lat: 40.2190, lon: 29.0000 },
+      { id: "B07", name: "Ihsaniye", lat: 40.2120, lon: 29.0120 },
+      { id: "B08", name: "Karaman", lat: 40.2070, lon: 29.0250 },
+      { id: "B09", name: "Bursaspor/Acemler", lat: 40.2080, lon: 29.0360 },
+      { id: "B10", name: "Pasa Ciftligi", lat: 40.2050, lon: 29.0450 },
+      { id: "B11", name: "Sirameseler", lat: 40.2010, lon: 29.0505 },
+      { id: "B12", name: "Kulturpark", lat: 40.1988, lon: 29.0535 },
+      { id: "B13", name: "Merinos", lat: 40.1972, lon: 29.0568 },
+      { id: "B14", name: "Osmangazi", lat: 40.1956, lon: 29.0606 },
+      { id: "B15", name: "Sehrekustu", lat: 40.1904, lon: 29.0638 },
+      { id: "B16", name: "Demirtaspasa", lat: 40.1874, lon: 29.0695 },
+      { id: "B17", name: "Gokdere", lat: 40.1880, lon: 29.0780 },
+      { id: "B18", name: "Yildirim/Davutdede", lat: 40.1900, lon: 29.0880 },
+      { id: "B19", name: "Duacinari", lat: 40.1940, lon: 29.1000 },
+      { id: "B20", name: "Yuksek Ihtisas Hastanesi", lat: 40.1980, lon: 29.1120 },
+      { id: "B21", name: "Arabayatagi", lat: 40.2010, lon: 29.1250 },
+      { id: "B22", name: "Mimar Sinan/BTU", lat: 40.2030, lon: 29.1400 },
+      { id: "B23", name: "Hacivat", lat: 40.2050, lon: 29.1540 },
+      { id: "B24", name: "Sirinevler", lat: 40.2070, lon: 29.1680 },
+      { id: "B25", name: "Otosansit", lat: 40.2090, lon: 29.1820 },
+      { id: "B26", name: "Cumalikizik/Degirmenonu", lat: 40.2110, lon: 29.1960 },
+      { id: "B27", name: "Gursu", lat: 40.2150, lon: 29.2050 },
+      { id: "B28", name: "Kestel", lat: 40.1980, lon: 29.2100 },
+      { id: "U01", name: "Universite", lat: 40.2250, lon: 28.8700 },
+      { id: "U02", name: "Batikent", lat: 40.2220, lon: 28.8850 },
+      { id: "U03", name: "Yuzuncuyil", lat: 40.2200, lon: 28.8980 },
+      { id: "U04", name: "Ozluce/29 Ekim", lat: 40.2180, lon: 28.9120 },
+      { id: "U05", name: "Ertugrul", lat: 40.2160, lon: 28.9250 },
+      { id: "U06", name: "Altinsehir", lat: 40.2140, lon: 28.9380 },
+      { id: "U07", name: "Kucuk Sanayi", lat: 40.2120, lon: 28.9500 },
+      { id: "U08", name: "Ataevler", lat: 40.2110, lon: 28.9620 },
+      { id: "U09", name: "Besevler", lat: 40.2100, lon: 28.9750 },
+      { id: "U10", name: "Fatih Sultan Mehmet", lat: 40.2090, lon: 28.9900 },
+      { id: "U11", name: "Nilufer", lat: 40.2085, lon: 29.0060 },
+      { id: "U12", name: "Odunluk", lat: 40.2080, lon: 29.0220 },
+      { id: "O01", name: "Terminal", lat: 40.2660, lon: 29.0560 },
+      { id: "O02", name: "BUTTIM", lat: 40.2580, lon: 29.0610 },
+      { id: "O03", name: "Demirtas", lat: 40.2850, lon: 29.0750 },
+      { id: "O04", name: "Sehir Hastanesi", lat: 40.2320, lon: 28.9350 },
+      { id: "O05", name: "Gorukle", lat: 40.2320, lon: 28.8450 },
+      { id: "O06", name: "Hasanaga TOKI", lat: 40.2100, lon: 28.7850 },
+      { id: "O07", name: "Mudanya", lat: 40.3770, lon: 28.8830 },
+      { id: "O08", name: "Guzelyali", lat: 40.3620, lon: 28.9300 },
+      { id: "O09", name: "BUDO Iskelesi", lat: 40.3790, lon: 28.8820 },
+      { id: "O10", name: "Teleferik", lat: 40.1740, lon: 29.0830 },
+      { id: "O11", name: "Setbasi", lat: 40.1810, lon: 29.0710 },
+      { id: "O12", name: "Heykel", lat: 40.1833, lon: 29.0610 }
+    ];
+
+    const lines = [
+      {
+        id: "M1",
+        type: "m1",
+        color: "#1967d2",
+        stopIds: ["B01", "B02", "B03", "B04", "B05", "B06", "B07", "B08", "B09", "B10", "B11", "B12", "B13", "B14", "B15", "B16", "B17", "B18", "B19", "B20", "B21"]
+      },
+      {
+        id: "M2",
+        type: "m2",
+        color: "#c27803",
+        stopIds: ["U01", "U02", "U03", "U04", "U05", "U06", "U07", "U08", "U09", "U10", "U11", "U12", "B09", "B10", "B11", "B12", "B13", "B14", "B15", "B16", "B17", "B18", "B19", "B20", "B21", "B22", "B23", "B24", "B25", "B26", "B27", "B28"]
+      },
+      {
+        id: "91",
+        type: "bus-a",
+        color: "#0e8a65",
+        stopIds: ["O01", "O02", "B21", "B22", "B23", "B24", "B25", "B26", "B27", "B28"]
+      },
+      {
+        id: "1M",
+        type: "bus-b",
+        color: "#7c3aed",
+        stopIds: ["O07", "O08", "B02"]
+      },
+      {
+        id: "F1",
+        type: "bus-b",
+        color: "#7c3aed",
+        stopIds: ["O09", "O07", "O08", "B02", "O02", "O01"]
+      },
+      {
+        id: "17C",
+        type: "bus-a",
+        color: "#0e8a65",
+        stopIds: ["O01", "O02", "O03"]
+      },
+      {
+        id: "SH",
+        type: "bus-c",
+        color: "#be123c",
+        stopIds: ["O04", "B03", "B09"]
+      },
+      {
+        id: "1T",
+        type: "bus-c",
+        color: "#be123c",
+        stopIds: ["O06", "O05", "U01"]
+      },
+      {
+        id: "35U",
+        type: "bus-c",
+        color: "#be123c",
+        stopIds: ["O05", "U01", "U02"]
+      },
+      {
+        id: "HE",
+        type: "bus-c",
+        color: "#be123c",
+        stopIds: ["O10", "O11", "O12", "B15"]
+      }
+    ];
+
+    class KdTree {
+      constructor(items) {
+        this.root = null;
+        for (const item of items) {
+          this.root = this.insert(this.root, item, 0);
+        }
+      }
+
+      insert(node, item, depth) {
+        if (!node) {
+          return { item, depth, left: null, right: null };
+        }
+
+        const compareLatitude = depth % 2 === 0;
+        const goesLeft = compareLatitude ? item.lat < node.item.lat : item.lon < node.item.lon;
+        if (goesLeft) {
+          node.left = this.insert(node.left, item, depth + 1);
+        } else {
+          node.right = this.insert(node.right, item, depth + 1);
+        }
+
+        return node;
+      }
+
+      findNearest(point, count) {
+        const candidates = [];
+        this.search(this.root, point, count, candidates);
+        return candidates
+          .sort((a, b) => a.distance - b.distance)
+          .map((candidate) => ({ ...candidate.item, distance: candidate.distance }));
+      }
+
+      search(node, point, count, candidates) {
+        if (!node) {
+          return;
+        }
+
+        addNearestCandidate(candidates, {
+          item: node.item,
+          distance: distance(point, node.item)
+        }, count);
+
+        const compareLatitude = node.depth % 2 === 0;
+        const axisDelta = compareLatitude ? point.lat - node.item.lat : point.lon - node.item.lon;
+        const nearBranch = axisDelta < 0 ? node.left : node.right;
+        const farBranch = axisDelta < 0 ? node.right : node.left;
+
+        this.search(nearBranch, point, count, candidates);
+
+        const axisKm = Math.abs(axisDelta) * (compareLatitude ? 111 : 85);
+        const worstDistance = candidates.length < count
+          ? Infinity
+          : Math.max(...candidates.map((candidate) => candidate.distance));
+
+        if (axisKm <= worstDistance) {
+          this.search(farBranch, point, count, candidates);
+        }
+      }
+    }
+
+    class MinHeap {
+      constructor() {
+        this.items = [];
+      }
+
+      get count() {
+        return this.items.length;
+      }
+
+      insert(value, priority) {
+        this.items.push({ value, priority });
+        this.moveUp(this.items.length - 1);
+      }
+
+      extractMin() {
+        if (!this.items.length) {
+          return null;
+        }
+
+        const min = this.items[0];
+        const last = this.items.pop();
+        if (this.items.length) {
+          this.items[0] = last;
+          this.moveDown(0);
+        }
+
+        return min.value;
+      }
+
+      moveUp(index) {
+        while (index > 0) {
+          const parentIndex = Math.floor((index - 1) / 2);
+          if (this.items[parentIndex].priority <= this.items[index].priority) {
+            break;
+          }
+
+          this.swap(parentIndex, index);
+          index = parentIndex;
+        }
+      }
+
+      moveDown(index) {
+        while (true) {
+          const leftIndex = index * 2 + 1;
+          const rightIndex = leftIndex + 1;
+          let smallestIndex = index;
+
+          if (leftIndex < this.items.length && this.items[leftIndex].priority < this.items[smallestIndex].priority) {
+            smallestIndex = leftIndex;
+          }
+
+          if (rightIndex < this.items.length && this.items[rightIndex].priority < this.items[smallestIndex].priority) {
+            smallestIndex = rightIndex;
+          }
+
+          if (smallestIndex === index) {
+            break;
+          }
+
+          this.swap(index, smallestIndex);
+          index = smallestIndex;
+        }
+      }
+
+      swap(firstIndex, secondIndex) {
+        [this.items[firstIndex], this.items[secondIndex]] = [this.items[secondIndex], this.items[firstIndex]];
+      }
+    }
+
+    const mapStartId = "MAP_START";
+    const mapTargetId = "MAP_TARGET";
+    const transferPenalty = 5;
+    const walkingMinutesPerKm = 12;
+    let pickMode = "start";
+    let mapStartPoint = null;
+    let mapTargetPoint = null;
+
+    const stopById = new Map(stops.map((stop) => [stop.id, stop]));
+    const pointById = new Map(points.map((point) => [point.id, point]));
+    const graphEdges = lines.flatMap(makeLineEdges);
+    const adjacencyByStopId = buildAdjacency(graphEdges);
+    const spatialIndex = new KdTree(stops);
+    const map = L.map("map", { zoomControl: true }).setView([40.205, 29.045], 12);
+    const layers = L.layerGroup().addTo(map);
+    const dynamicLayers = L.layerGroup().addTo(map);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: "&copy; OpenStreetMap"
+    }).addTo(map);
+
+    L.control.scale({ metric: true, imperial: false }).addTo(map);
+
+    const startSelect = document.querySelector("#startSelect");
+    const targetSelect = document.querySelector("#targetSelect");
+    const nearestCountInput = document.querySelector("#nearestCount");
+    const pickStartButton = document.querySelector("#pickStartButton");
+    const pickTargetButton = document.querySelector("#pickTargetButton");
+
+    for (const point of points) {
+      startSelect.append(option(point.id, point.name));
+      targetSelect.append(option(point.id, point.name));
+    }
+    startSelect.append(option(mapStartId, "Haritadan secilen baslangic"));
+    targetSelect.append(option(mapTargetId, "Haritadan secilen hedef"));
+
+    startSelect.value = "P5";
+    targetSelect.value = "P6";
+    startSelect.addEventListener("change", render);
+    targetSelect.addEventListener("change", render);
+    nearestCountInput.addEventListener("input", render);
+    pickStartButton.addEventListener("click", () => setPickMode("start"));
+    pickTargetButton.addEventListener("click", () => setPickMode("target"));
+    map.on("click", handleMapClick);
+
+    drawStaticLines();
+    setPickMode("start");
+    render();
+    setTimeout(() => {
+      map.invalidateSize();
+      render();
+    }, 100);
+
+    function drawStaticLines() {
+      for (const line of lines) {
+        const isMetro = line.id.startsWith("M");
+        L.polyline(line.stopIds.map(toLatLng), {
+          color: line.color,
+          weight: isMetro ? 5 : 3,
+          opacity: isMetro ? 0.72 : 0.58,
+          dashArray: isMetro ? null : "8 7"
+        }).addTo(layers);
+      }
+
+      for (const stop of stops) {
+        L.marker([stop.lat, stop.lon], { icon: divIcon("station-icon", [12, 12]), zIndexOffset: 0 })
+          .bindTooltip(`${stop.id} - ${stop.name}`, { direction: "top" })
+          .addTo(layers);
+      }
+    }
+
+    function handleMapClick(event) {
+      const point = {
+        id: pickMode === "start" ? mapStartId : mapTargetId,
+        name: pickMode === "start" ? "Harita Baslangic" : "Harita Hedef",
+        lat: event.latlng.lat,
+        lon: event.latlng.lng
+      };
+
+      if (pickMode === "start") {
+        mapStartPoint = point;
+        startSelect.value = mapStartId;
+        setPickMode("target");
+      } else {
+        mapTargetPoint = point;
+        targetSelect.value = mapTargetId;
+        setPickMode("start");
+      }
+
+      render();
+    }
+
+    function setPickMode(mode) {
+      pickMode = mode;
+      pickStartButton.classList.toggle("active", mode === "start");
+      pickTargetButton.classList.toggle("active", mode === "target");
+      document.querySelector("#pickModeMetric").textContent = mode === "start" ? "Baslangic" : "Hedef";
+    }
+
+    function render() {
+      dynamicLayers.clearLayers();
+
+      const startPoint = getSelectedPoint("start");
+      const targetPoint = getSelectedPoint("target");
+      const nearestCount = clamp(Number(nearestCountInput.value || 3), 1, 5);
+      nearestCountInput.value = nearestCount;
+
+      const nearestStartStops = findNearestStops(startPoint, nearestCount);
+      const nearestTargetStop = findNearestStops(targetPoint, 1)[0];
+      const startStop = nearestStartStops[0];
+      const result = dijkstra(startStop.id, nearestTargetStop.id);
+      const routeStops = result.path.map((id) => stopById.get(id));
+      const transfers = findTransfers(result.path, result.lineIds);
+      if (!routeStops.length || !Number.isFinite(result.cost)) {
+        document.querySelector("#startStopMetric").textContent = startStop.name;
+        document.querySelector("#targetStopMetric").textContent = nearestTargetStop.name;
+        document.querySelector("#firstWalkMetric").textContent = "-";
+        document.querySelector("#transitMetric").textContent = "Rota yok";
+        document.querySelector("#lastWalkMetric").textContent = "-";
+        document.querySelector("#costMetric").textContent = "-";
+        document.querySelector("#transferMetric").textContent = "-";
+        document.querySelector("#tripSummaryList").innerHTML = "";
+        drawLists(nearestStartStops, [], []);
+        return;
+      }
+      const firstWalkKm = distance(startPoint, startStop);
+      const lastWalkKm = distance(nearestTargetStop, targetPoint);
+      const transitKm = getPathDistanceKm(result.path);
+      const firstWalkMinutes = firstWalkKm * walkingMinutesPerKm;
+      const lastWalkMinutes = lastWalkKm * walkingMinutesPerKm;
+      const transferCost = transfers.length * transferPenalty;
+      const transitCost = Math.max(0, result.cost - transferCost);
+      const totalCost = firstWalkMinutes + result.cost + lastWalkMinutes;
+      const totalKm = firstWalkKm + transitKm + lastWalkKm;
+
+      document.querySelector("#startStopMetric").textContent = startStop.name;
+      document.querySelector("#targetStopMetric").textContent = nearestTargetStop.name;
+      document.querySelector("#firstWalkMetric").textContent = `${formatMinutes(firstWalkMinutes)} dk`;
+      document.querySelector("#transitMetric").textContent = `${formatMinutes(transitCost)} dk`;
+      document.querySelector("#lastWalkMetric").textContent = `${formatMinutes(lastWalkMinutes)} dk`;
+      document.querySelector("#costMetric").textContent = `${formatMinutes(totalCost)} dk / ${totalKm.toFixed(1)} km`;
+      document.querySelector("#transferMetric").textContent = transfers.length ? transfers.map((stop) => stop.name).join(", ") : "Yok";
+
+      L.marker([startPoint.lat, startPoint.lon], { icon: divIcon("start-point-icon"), zIndexOffset: 1200 })
+        .bindTooltip("Baslangic noktasi", { permanent: false })
+        .addTo(dynamicLayers);
+      L.marker([targetPoint.lat, targetPoint.lon], { icon: divIcon("target-point-icon"), zIndexOffset: 1200 })
+        .bindTooltip("Hedef noktasi", { permanent: false })
+        .addTo(dynamicLayers);
+
+      L.polyline([[startPoint.lat, startPoint.lon], [startStop.lat, startStop.lon]], {
+        color: "#475569",
+        weight: 3,
+        dashArray: "5 8"
+      }).addTo(dynamicLayers);
+      L.polyline([[nearestTargetStop.lat, nearestTargetStop.lon], [targetPoint.lat, targetPoint.lon]], {
+        color: "#475569",
+        weight: 3,
+        dashArray: "5 8"
+      }).addTo(dynamicLayers);
+
+      L.polyline(routeStops.map((stop) => [stop.lat, stop.lon]), {
+        color: "#d93636",
+        weight: 7,
+        opacity: 0.95,
+        dashArray: "12 10"
+      }).addTo(dynamicLayers);
+
+      for (const stop of nearestStartStops) {
+        L.marker([stop.lat, stop.lon], { icon: divIcon("nearest-icon", [24, 24]), zIndexOffset: 900 })
+          .bindTooltip(`${stop.id} - ${stop.name}`, { direction: "top" })
+          .addTo(dynamicLayers);
+      }
+
+      for (const stop of routeStops) {
+        const iconClass = transfers.some((transfer) => transfer.id === stop.id) ? "transfer-icon" : "route-icon";
+        L.marker([stop.lat, stop.lon], { icon: divIcon(iconClass, [26, 26]), zIndexOffset: 1000 })
+          .bindTooltip(`${stop.id} - ${stop.name}`, { direction: "top" })
+          .addTo(dynamicLayers);
+      }
+
+      drawLists(nearestStartStops, routeStops, transfers);
+      drawTripSummary({
+        startPoint,
+        targetPoint,
+        startStop,
+        nearestTargetStop,
+        routeStops,
+        firstWalkMinutes,
+        firstWalkKm,
+        transitCost,
+        transitKm,
+        lastWalkMinutes,
+        lastWalkKm,
+        totalCost,
+        totalKm
+      });
+      const bounds = L.latLngBounds(routeStops.map((stop) => [stop.lat, stop.lon]));
+      bounds.extend([startPoint.lat, startPoint.lon]);
+      bounds.extend([targetPoint.lat, targetPoint.lon]);
+      map.fitBounds(bounds, { padding: [36, 36], maxZoom: 14 });
+    }
+
+    function getSelectedPoint(type) {
+      const select = type === "start" ? startSelect : targetSelect;
+      const customId = type === "start" ? mapStartId : mapTargetId;
+      const customPoint = type === "start" ? mapStartPoint : mapTargetPoint;
+
+      if (select.value === customId && customPoint) {
+        return customPoint;
+      }
+
+      if (select.value === customId) {
+        return type === "start" ? pointById.get("P5") : pointById.get("P6");
+      }
+
+      return pointById.get(select.value);
+    }
+
+    function makeLineEdges(line) {
+      const edges = [];
+      for (let index = 0; index < line.stopIds.length - 1; index++) {
+        const from = line.stopIds[index];
+        const to = line.stopIds[index + 1];
+        const cost = Math.max(1, Math.round(distance(stopById.get(from), stopById.get(to)) * 2.4));
+        edges.push({ from, to, lineId: line.id, cost });
+        edges.push({ from: to, to: from, lineId: line.id, cost });
+      }
+      return edges;
+    }
+
+    function buildAdjacency(edges) {
+      const adjacency = new Map();
+      for (const edge of edges) {
+        if (!adjacency.has(edge.from)) {
+          adjacency.set(edge.from, []);
+        }
+
+        adjacency.get(edge.from).push(edge);
+      }
+
+      return adjacency;
+    }
+
+    function dijkstra(startId, targetId) {
+      const startKey = stateKey(startId, "START");
+      const distances = new Map([[startKey, 0]]);
+      const previous = new Map();
+      const visited = new Set();
+      const states = new Map([[startKey, { stopId: startId, lineId: "START" }]]);
+      const queue = new MinHeap();
+      let targetKey = null;
+      queue.insert({ key: startKey, stopId: startId, lineId: "START", cost: 0 }, 0);
+
+      while (queue.count) {
+        const current = queue.extractMin();
+        if (visited.has(current.key)) continue;
+        visited.add(current.key);
+        if (current.stopId === targetId) {
+          targetKey = current.key;
+          break;
+        }
+
+        for (const edge of adjacencyByStopId.get(current.stopId) ?? []) {
+          const transferCost = current.lineId !== "START" && current.lineId !== edge.lineId ? transferPenalty : 0;
+          const nextCost = current.cost + edge.cost + transferCost;
+          const nextKey = stateKey(edge.to, edge.lineId);
+          if (nextCost < (distances.get(nextKey) ?? Infinity)) {
+            distances.set(nextKey, nextCost);
+            previous.set(nextKey, { key: current.key, edgeLineId: edge.lineId });
+            states.set(nextKey, { stopId: edge.to, lineId: edge.lineId });
+            queue.insert({ key: nextKey, stopId: edge.to, lineId: edge.lineId, cost: nextCost }, nextCost);
+          }
+        }
+      }
+
+      if (!targetKey) {
+        return { path: [], lineIds: [], cost: Infinity };
+      }
+
+      const path = [];
+      const lineIds = [];
+      let currentKey = targetKey;
+      while (currentKey) {
+        const state = states.get(currentKey);
+        path.push(state.stopId);
+        const previousState = previous.get(currentKey);
+        if (!previousState) break;
+        lineIds.push(previousState.edgeLineId);
+        currentKey = previousState.key;
+      }
+
+      return { path: path.reverse(), lineIds: lineIds.reverse(), cost: distances.get(targetKey) };
+    }
+
+    function stateKey(stopId, lineId) {
+      return `${stopId}|${lineId}`;
+    }
+
+    function findTransfers(pathIds, lineIds) {
+      const transfers = [];
+      for (let index = 1; index < pathIds.length - 1; index++) {
+        if (lineIds[index - 1] && lineIds[index] && lineIds[index - 1] !== lineIds[index]) {
+          transfers.push(stopById.get(pathIds[index]));
+        }
+      }
+      return transfers;
+    }
+
+    function findNearestStops(point, count) {
+      return spatialIndex.findNearest(point, count);
+    }
+
+    function addNearestCandidate(candidates, candidate, count) {
+      if (count <= 0) {
+        return;
+      }
+
+      if (candidates.length < count) {
+        candidates.push(candidate);
+        return;
+      }
+
+      let worstIndex = 0;
+      for (let index = 1; index < candidates.length; index++) {
+        if (candidates[index].distance > candidates[worstIndex].distance) {
+          worstIndex = index;
+        }
+      }
+
+      if (candidate.distance < candidates[worstIndex].distance) {
+        candidates[worstIndex] = candidate;
+      }
+    }
+
+    function distance(first, second) {
+      const latKm = (first.lat - second.lat) * 111;
+      const lonKm = (first.lon - second.lon) * 85;
+      return Math.hypot(latKm, lonKm);
+    }
+
+    function toLatLng(stopId) {
+      const stop = stopById.get(stopId);
+      return [stop.lat, stop.lon];
+    }
+
+    function option(value, text) {
+      const element = document.createElement("option");
+      element.value = value;
+      element.textContent = text;
+      return element;
+    }
+
+    function divIcon(className, size = [24, 24]) {
+      return L.divIcon({
+        className,
+        html: "",
+        iconSize: size,
+        iconAnchor: [size[0] / 2, size[1] / 2]
+      });
+    }
+
+    function drawLists(nearestStartStops, routeStops, transfers) {
+      const nearestList = document.querySelector("#nearestList");
+      const routeList = document.querySelector("#routeList");
+      nearestList.innerHTML = "";
+      routeList.innerHTML = "";
+
+      nearestStartStops.forEach((stop, index) => {
+        nearestList.append(pill(stop.name, stop.id, `${index + 1}. yakin`));
+      });
+
+      routeStops.forEach((stop) => {
+        const transfer = transfers.some((item) => item.id === stop.id);
+        routeList.append(pill(stop.name, stop.id, transfer ? "aktarma" : "istasyon"));
+      });
+    }
+
+    function drawTripSummary(summary) {
+      const tripSummaryList = document.querySelector("#tripSummaryList");
+      const startRouteName = summary.routeStops[0]?.name ?? summary.startStop.name;
+      const endRouteName = summary.routeStops.at(-1)?.name ?? summary.nearestTargetStop.name;
+      tripSummaryList.innerHTML = "";
+
+      tripSummaryList.append(summaryStep(
+        1,
+        `Baslangic konumundan ${summary.startStop.name} duragina yurume`,
+        summary.firstWalkMinutes,
+        summary.firstWalkKm
+      ));
+      tripSummaryList.append(summaryStep(
+        2,
+        `${startRouteName} - ${endRouteName} arasinda hat icinde ilerleme`,
+        summary.transitCost,
+        summary.transitKm
+      ));
+      tripSummaryList.append(summaryStep(
+        3,
+        `${summary.nearestTargetStop.name} duragindan hedef konuma yurume`,
+        summary.lastWalkMinutes,
+        summary.lastWalkKm
+      ));
+      tripSummaryList.append(summaryStep(
+        4,
+        "Toplam yol",
+        summary.totalCost,
+        summary.totalKm
+      ));
+    }
+
+    function summaryStep(index, text, minutes, km) {
+      const item = document.createElement("div");
+      item.className = "summary-step";
+      item.innerHTML = `
+        <span class="summary-index">${index}</span>
+        <span>${text}</span>
+        <strong>${formatMinutes(minutes)} dk<br>${km.toFixed(1)} km</strong>
+      `;
+      return item;
+    }
+
+    function getPathDistanceKm(pathIds) {
+      let total = 0;
+      for (let index = 0; index < pathIds.length - 1; index++) {
+        total += distance(stopById.get(pathIds[index]), stopById.get(pathIds[index + 1]));
+      }
+      return total;
+    }
+
+    function formatMinutes(value) {
+      if (!Number.isFinite(value)) {
+        return "-";
+      }
+
+      return Math.max(0, Math.round(value)).toString();
+    }
+
+    function pill(name, id, badgeText) {
+      const item = document.createElement("div");
+      item.className = "pill";
+      item.innerHTML = `<span class="dot"></span><span>${name}</span><span class="badge">${id} | ${badgeText}</span>`;
+      return item;
+    }
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+  </script>
+</body>
+</html>
