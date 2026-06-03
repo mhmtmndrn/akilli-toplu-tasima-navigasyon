@@ -1,0 +1,6 @@
+services:
+  smart-transit-navigation:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: smart-transit-navigation:latest
