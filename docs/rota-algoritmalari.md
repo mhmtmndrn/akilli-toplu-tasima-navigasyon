@@ -1,71 +1,59 @@
-# Rota Algoritmalari Baslangic Iskeleti
+# Rota Algoritmalari
 
-Bu dokuman, Akilli Toplu Tasima ve Navigasyon Sistemi projesinde graf ve rota algoritmalari gorev branch'i icin hazirlanan baslangic yapilarini aciklar.
+Proje, toplu tasima agini agirlikli ve yonlu graf olarak modeller. Duraklar dugum, metro/otobus baglantilari kenar olarak tutulur.
 
 ## TransitGraph
 
-`TransitGraph`, toplu tasima agini graf yapisi olarak temsil eder.
+`TransitGraph`, adjacency list kullanan graf yapisidir.
 
-Temel kullanim:
+- Dugumler: duraklar
+- Kenarlar: duraklar arasi metro veya otobus baglantilari
+- Kenar agirligi: sure/mesafe tabanli rota maliyeti
+- Hat bilgisi: `LineId`
 
-- Duraklar `GraphNode` olarak tutulur.
-- Duraklar arasi baglantilar `GraphEdge` olarak tutulur.
-- Her durak icin komsu kenarlar adjacency list yapisinda saklanir.
-- Ayni iki durak arasinda birden fazla hat olabilecegi icin multigraph mantigi desteklenir.
-
-Multigraph destegi, ayni `fromStopId` ve `toStopId` degerleri icin birden fazla `GraphEdge` eklenebilmesiyle saglanir. Bu sayede ayni iki durak arasinda farkli hatlar, farkli sureler veya farkli maliyetler tutulabilir.
-
-## GraphNode
-
-`GraphNode`, graf uzerindeki bir duragi temsil eder.
-
-Tutulan temel alan:
-
-- `StopId`: Duragin benzersiz kimligi.
-
-## GraphEdge
-
-`GraphEdge`, iki durak arasindaki ulasim baglantisini temsil eder.
-
-Tutulan temel alanlar:
-
-- `FromStopId`: Baslangic duragi.
-- `ToStopId`: Hedef duragi.
-- `LineId`: Baglantinin ait oldugu hat.
-- `Cost`: Rota algoritmasinda kullanilacak agirlik degeri.
-- `Distance`: Duraklar arasi mesafe.
-- `DurationMinutes`: Tahmini yolculuk suresi.
-
-## MinHeap
-
-`MinHeap<TValue>`, Dijkstra algoritmasinda en dusuk maliyetli duragi secmek icin kullanilir.
-
-Temel islemler:
-
-- `Insert`: Degeri oncelik degeriyle birlikte heap'e ekler.
-- `TryExtractMin`: En dusuk oncelikli degeri heap'ten cikarir.
-
-Bu yapi, hazir `PriorityQueue` yerine veri yapilari dersi kapsaminda basit bir min-heap mantigi gostermek icin eklenmistir.
+Ayni iki durak arasinda birden fazla hat olabilecegi icin multigraph mantigi desteklenir. Ornegin ayni iki istasyon hem M1 hem M2 ortak hattinda bulunabilir.
 
 ## Dijkstra
 
-`Dijkstra`, baslangic duragindan hedef duraga en dusuk maliyetli yolu bulmak icin kullanilir.
+`src/Algorithms/Dijkstra.cs`, baslangic duragindan hedef duraga en dusuk maliyetli yolu bulur.
 
-Baslangic isleyisi:
+Temel adimlar:
 
-1. Baslangic duraginin maliyeti `0` olarak atanir.
-2. Diger duraklarin maliyeti sonsuz kabul edilir.
-3. MinHeap ile en dusuk maliyetli durak secilir.
-4. Secilen duragin komsu kenarlari gezilir.
-5. Daha dusuk maliyetli bir yol bulunursa mesafe ve onceki durak bilgisi guncellenir.
-6. Hedef duraga ulasilinca rota geriye dogru kurulur.
+1. Baslangic duraginin maliyeti `0` yapilir.
+2. Diger duraklar sonsuz maliyetle baslatilir.
+3. `MinHeap` ile en dusuk maliyetli durak secilir.
+4. Komsu kenarlar gezilir.
+5. Daha dusuk maliyet bulunursa onceki durak ve maliyet bilgisi guncellenir.
+6. Hedefe ulasilinca rota geriye dogru kurulur.
 
-Bu sinif su an temel rota hesaplama iskeletini verir. Final projede aktarma cezasi, yurumeye bagli ek maliyet, sure/mesafe secimi ve hat degisimi gibi detaylarla genisletilebilir.
+Harita demosunda ayni Dijkstra mantigi hat durumuyla birlikte calisir. Secilecek dugumler `MinHeap` ile alinir. Boylece hat degisimi oldugunda aktarma cezasi da maliyete eklenir.
 
-## Sonraki Adimlar
+## KNN
 
-- TransitGraph icin iki yonlu kenar ekleme yardimci metodu eklenebilir.
-- GraphEdge icine aktarma veya arac tipi bilgisi eklenebilir.
-- Dijkstra icin birim testler yazilabilir.
-- A* algoritmasi opsiyonel olarak eklenebilir.
-- Rota sonucu frontend veya API katmanina uygun DTO ile donulebilir.
+Kullanici haritadan bir koordinat sectiginde en yakin duraklar spatial arama mantigiyle bulunur.
+
+- C# tarafinda: `KdTree.FindNearest(...)`
+- Harita demosunda: `findNearestStops(...)`, `KdTree.findNearest(...)` uzerinden calisir.
+
+## Maliyet Modeli
+
+Toplam rota maliyeti su parcalardan olusur:
+
+- Baslangic konumundan ilk duraga yurume maliyeti
+- Duraklar arasi ulasim maliyeti
+- Hat degisimi varsa aktarma cezasi
+- Son duraktan hedef konuma yurume maliyeti
+
+Harita arayuzu bu maliyetleri ayri ayri ve toplam olarak gosterir.
+
+## Zaman ve Uzay Karmasikligi
+
+| Algoritma / Veri yapisi | Zaman karmasikligi | Uzay karmasikligi |
+|---|---|---|
+| KdTree kurulum | Ortalama `O(N log N)` | `O(N)` |
+| KdTree en yakin K arama | Ortalama `O(log N + K)`, en kotu `O(N)` | `O(K + H)` |
+| Dijkstra + MinHeap | `O((V + E) log V)` | `O(V + E)` |
+| MinHeap ekleme/cikarma | `O(log N)` | `O(N)` |
+| HashTable erisim | Ortalama `O(1)`, en kotu `O(N)` | `O(N)` |
+
+Burada `V` durak sayisini, `E` duraklar arasi baglanti sayisini, `K` istenen en yakin durak sayisini, `H` ise KdTree yuksekligini temsil eder.
