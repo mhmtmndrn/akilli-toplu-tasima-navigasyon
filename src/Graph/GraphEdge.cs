@@ -1,13 +1,14 @@
 using System;
 
-namespace SmartTransitNavigation.Models;
+namespace SmartTransitNavigation.Graph;
 
-public sealed class RouteEdge
+public sealed class GraphEdge
 {
-    public RouteEdge(
+    public GraphEdge(
         string fromStopId,
         string toStopId,
         string lineId,
+        double cost,
         double distance,
         double durationMinutes)
     {
@@ -26,6 +27,11 @@ public sealed class RouteEdge
             throw new ArgumentException("Line id cannot be empty.", nameof(lineId));
         }
 
+        if (cost < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(cost), "Cost cannot be negative.");
+        }
+
         if (distance < 0)
         {
             throw new ArgumentOutOfRangeException(nameof(distance), "Distance cannot be negative.");
@@ -39,6 +45,7 @@ public sealed class RouteEdge
         FromStopId = fromStopId;
         ToStopId = toStopId;
         LineId = lineId;
+        Cost = cost;
         Distance = distance;
         DurationMinutes = durationMinutes;
     }
@@ -48,6 +55,8 @@ public sealed class RouteEdge
     public string ToStopId { get; }
 
     public string LineId { get; }
+
+    public double Cost { get; }
 
     public double Distance { get; }
 
