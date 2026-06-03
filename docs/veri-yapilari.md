@@ -1,75 +1,81 @@
-# Veri Yapilari
+# Veri Yapilari Baslangic Iskeleti
 
-Bu projede Bursa toplu tasima agi durak, hat ve baglanti modelleri uzerinden temsil edilir.
+Bu dokuman, Akilli Toplu Tasima ve Navigasyon Sistemi projesinde veri yapilari gorev branch'i icin eklenen baslangic yapilarini aciklar. Kodlar final proje seviyesinde degildir; amac ara rapor asamasinda anlamli, temiz ve genisletilebilir bir temel olusturmaktir.
 
 ## Modeller
 
 ### Stop
 
-`Stop`, bir metro veya otobus duragini temsil eder.
+`Stop`, sistemdeki bir toplu tasima duragini temsil eder.
 
-- `Id`
-- `Name`
-- `Latitude`
-- `Longitude`
+Tutulan temel bilgiler:
 
-Duraklar hem hash table icinde hizli erisim icin hem de KdTree icinde konumsal arama icin kullanilir.
+- `Id`: Duragin benzersiz kimligi.
+- `Name`: Duragin adi.
+- `Latitude`: Duragin enlem degeri.
+- `Longitude`: Duragin boylam degeri.
+
+Bu model, ileride KdTree icine yerlestirilerek kullanici konumuna en yakin duraklarin bulunmasinda kullanilabilir.
 
 ### TransitLine
 
-`TransitLine`, bir metro veya otobus hattini temsil eder.
+`TransitLine`, bir toplu tasima hattini temsil eder.
 
-- `Id`
-- `Name`
-- `StopIds`
+Tutulan temel bilgiler:
 
-Hat uzerindeki ardışık duraklar graf kenarlarina donusturulur.
+- `Id`: Hattin benzersiz kimligi.
+- `Name`: Hattin okunabilir adi.
+- `StopIds`: Hattin ugradigi durak kimlikleri.
 
-### GraphEdge
+Bu model, ileride hat bazli rota gosterimi ve aktarma analizleri icin genisletilebilir.
 
-`GraphEdge`, iki durak arasindaki ulasim baglantisidir.
+### RouteEdge
 
-- `FromStopId`
-- `ToStopId`
-- `LineId`
-- `Cost`
-- `Distance`
-- `DurationMinutes`
+`RouteEdge`, iki durak arasindaki ulasim baglantisini temsil eder.
 
-## KdTree
+Tutulan temel bilgiler:
 
-`src/DataStructures/KdTree.cs`, iki boyutlu koordinat aramasi icin kullanilir.
+- `FromStopId`: Baslangic duragi.
+- `ToStopId`: Hedef duragi.
+- `LineId`: Baglantinin ait oldugu hat.
+- `Distance`: Duraklar arasi mesafe.
+- `DurationMinutes`: Tahmini yolculuk suresi.
 
-Kullanim:
-
-- Durak koordinatlarini ekleme
-- Kullanici konumuna en yakin K duragi bulma
-
-Bu yapi dogrusal taramaya gore ortalama durumda daha verimli arama sunar.
-
-## TransitGraph
-
-`src/Graph/TransitGraph.cs`, toplu tasima agini adjacency list ile tutar.
-
-- Dugumler: duraklar
-- Kenarlar: metro/otobus baglantilari
-- Kenar agirligi: rota maliyeti
-- Multigraph destegi: ayni iki durak arasinda birden fazla hat bulunabilir
-
-## MinHeap
-
-`src/DataStructures/MinHeap.cs`, Dijkstra algoritmasinda en dusuk maliyetli duragi secmek icin kullanilir.
-
-- Ekleme: `O(log N)`
-- Minimum cikarma: `O(log N)`
+Bu model, graph veya multigraph yapisinin kenari olarak kullanilabilir.
 
 ## CustomHashTable
 
-`src/DataStructures/CustomHashTable.cs`, durak ve hat bilgilerine hizli erisim icin kullanilir.
+`CustomHashTable<TKey, TValue>`, durak ve hat bilgilerine hizli erisim saglamak icin eklenen baslangic hash table sinifidir.
 
-Ornek kullanimlar:
+Mevcut temel ozellikler:
+
+- Anahtar-deger ekleme.
+- Anahtara gore deger arama.
+- Anahtar var mi kontrolu.
+- Basit load factor kontrolu ile kapasite artirma.
+
+Ornek kullanim senaryolari:
 
 - `StopId -> Stop`
 - `LineId -> TransitLine`
+- `StopName -> StopId`
 
-Ortalama erisim maliyeti `O(1)` kabul edilir.
+## KdTree
+
+`KdTree<TValue>`, iki boyutlu koordinat verilerini saklamak ve en yakin K kaydi bulmak icin eklenen baslangic sinifidir.
+
+Mevcut temel ozellikler:
+
+- `x` ve `y` koordinatiyla veri ekleme.
+- Girilen koordinata en yakin K degeri bulma.
+- X ve Y eksenlerini sirayla kullanarak agac uzerinde ilerleme.
+
+Bu yapi, projede durak koordinatlari uzerinden KNN aramasi yapmak icin kullanilacaktir.
+
+## Sonraki Adimlar
+
+- Graph veya multigraph sinifinin eklenmesi.
+- MinHeap veya PriorityQueue sinifinin eklenmesi.
+- KdTree icin birim testlerin yazilmasi.
+- CustomHashTable icin ekleme, guncelleme ve arama testlerinin yazilmasi.
+- Dijkstra algoritmasinin RouteEdge modeli ile baglanmasi.
